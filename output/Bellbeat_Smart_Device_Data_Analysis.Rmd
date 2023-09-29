@@ -1,0 +1,360 @@
+---
+title: "Bellabeat_Smart_Device_Data_Analysis"
+author: "Muhammad Anwar"
+date: "2023-09-28"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+Welcome to my Bellabeat Data Analysis Case Study! In this case study, I'll be performing real-world tasks as a Data Analyst. To answer important business questions, I'll be following the steps of the data analysis process, which include asking questions, preparing data, processing it, analyzing, sharing insights, and taking action.
+
+## About Bellabeat
+
+Bellabeat is a successful small company that specializes in creating health-focused products designed for women. With the potential to expand in the global smart device market, Bellabeat was founded in 2013 by Urška Sršen and Sando Mur. They manufacture health-focused smart products that collect data on activity, sleep, stress, and reproductive health, empowering women with insights about their health and habits. Over the years, Bellabeat has rapidly grown and established itself as a tech-driven wellness company for women.
+
+## Study Scenario
+
+In this study, my focus is on one of Bellabeat's products, and I will analyze smart device data to gain insights into how consumers are using these devices. These insights will play a crucial role in guiding the company's marketing strategy.
+
+## Questions for the Analysis (Ask Phase)
+
+During this phase, my aim was to better understand the data and the problem I'm addressing. To achieve this, I conducted additional research and posed specific questions:
+
+- What are the notable trends in smart device usage? How can these trends inform Bellabeat's marketing strategy? Initially, the company needs to tailor their marketing efforts to meet the specific needs of their customers based on their usage of fitness smart devices. Following that, I will provide high-level recommendations for how these trends can shape Bellabeat's marketing strategy.
+
+- Who are the key stakeholders? The primary stakeholders include Urška Sršen, Bellabeat's co-founder and Chief Creative Officer, Sando Mur, the mathematician and co-founder of Bellabeat. Additionally, collaboration with the broader Bellabeat marketing analytics team is essential to this analysis.
+
+# Business Task
+
+Now, after obtaining answers to all of my questions during the ask phase, I can clearly define the business task: 
+
+"To analyze how Bellabeat customers use their smart devices and identify potential growth opportunities and recommendations for the Bellabeat marketing team based on trends in smart device usage."
+
+# Preparing the Data (Prepare Phase)
+
+In this phase, I will perform the following tasks:
+
+## Downloading the Data
+
+I will download and import the dataset for analysis. It is essential to ensure that the data is well-organized and credible. Additionally, I will sort and filter the data.
+
+**Data Source:** Bellabeat encourages the use of publicly available data that explores smart device users' daily habits from FitBit FitnessTracker Data (CC0: Public Domain, dataset provided through Mobius). This Kaggle dataset comprises data from thirty Fitbit users who consented to share their personal tracker data, including minute-level information on physical activity, heart rate, and sleep monitoring. It contains details about daily activity, steps, and heart rate, offering insights into users' habits. You can download the dataset from this link: [FitBit Fitness Tracker Data](https://www.kaggle.com/arashnic/fitbit).
+
+**About the Dataset:** The data was collected through a survey distributed via Amazon Mechanical Turk between December 3, 2016, and December 5, 2016, and consists of 18 CSV files.
+
+## Loading Packages
+
+I will install and load specific R packages to assist in the analysis. To save space and prevent the display of R code execution messages and warnings, I will use the options `message=FALSE` and `warning=FALSE`. Additionally, I will include some data cleaning packages for further analysis, the last three packages in the list.
+
+```{r}
+# installing packages
+install.packages("tidyverse")
+install.packages("lubridate")
+install.packages("dplyr")
+install.packages("ggplot2")
+install.packages("tidyr")
+install.packages("here")
+install.packages("skimr")
+install.packages("janitor")
+```
+
+Now, I’m going to load these packages. And I’m using in my code the options message=FALSE and warning=FALSE, to save space. And to prevent printing of the execution of the R code generated and the warning messages.
+
+```{r}
+# loading the libraries
+library(tidyverse)
+library(lubridate)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(here)
+library(skimr)
+library(janitor)
+```
+
+## Importing dataset
+Now, I’m going to Import all dataset. Then VIEW, CLEAN, FORMAT, and ORGANIZE the data. After
+reviewing all the dataset, I decided to make some asumptions and work only with these data for my analysis:
+- dailyActivity_merged.csv
+
+```{r}
+Activity <- read.csv("dailyActivity_merged.csv")
+head(Activity)
+colnames(Activity)
+str(Activity)
+```
+
+- dailyCalories_merged.csv
+
+```{r}
+Calories <- read.csv("dailyCalories_merged.csv")
+head(Calories)
+colnames(Calories)
+str(Calories)
+```
+
+- dailyIntensities_merged.csv
+
+```{r}
+Intensities <- read.csv("dailyIntensities_merged.csv")
+head(Intensities)
+colnames(Intensities)
+str(Intensities)
+```
+
+- heartrate_seconds_merged.csv
+
+```{r}
+Heartrate <- read.csv("heartrate_seconds_merged.csv")
+head(Heartrate)
+colnames(Heartrate)
+str(Heartrate)
+```
+
+- sleepDay_merged.csv
+
+```{r}
+Sleep <- read.csv("sleepDay_merged.csv")
+head(Sleep)
+colnames(Sleep)
+str(Sleep)
+```
+
+- weightLogInfo_merged.csv
+
+```{r}
+Weight <- read.csv("weightLogInfo_merged.csv")
+head(Weight)
+colnames(Weight)
+str(Weight)
+```
+
+So now, we can see that everything were imported correctly.
+
+# Data Cleaning (Process Phase)
+
+## Basic Data Cleaning
+
+Now, I'm in the process of preparing, cleaning, and organizing the dataset for analysis. To quickly assess the data, I employed functions like `glimpse()` and `skim_without_charts`. Additionally, I improved the data's readability by using `clean_names()` to clean up column names.
+
+Here are the steps I took to clean the data:
+
+- For the datasets (Activity, Calories, and Intensities): During data cleaning, I did not encounter spelling errors, misfield values, missing values, extra or blank spaces, nor did I find any duplicates. To enhance formatting, I applied clear formatting techniques. Some data types were converted to numeric, and date columns were adjusted to the appropriate date type.
+- For Sleep data: I identified and removed three duplicate entries.
+- For Weight data: In one column, I noticed a significant number of missing values. I made the decision to exclude that column from further analysis.
+
+## Fixing Data Formatting
+
+I observed issues with the timestamp data. To facilitate analysis, I will convert it into date-time format and split it into date and time components.
+
+``` {r}
+# Activity
+Activity$ActivityDate=as.POSIXct(Activity$ActivityDate, format="%m/%d/%Y", tz=Sys.timezone())
+Activity$date <- format(Activity$ActivityDate, format = "%m/%d/%y")
+Activity$ActivityDate=as.Date(Activity$ActivityDate, format="%m/%d/%Y", tz=Sys.timezone())
+Activity$date=as.Date(Activity$date, format="%m/%d/%Y")
+
+
+# Intensities
+Intensities$ActivityDay=as.Date(Intensities$ActivityDay, format="%m/%d/%Y", tz=Sys.timezone())
+
+
+# Sleep
+Sleep$SleepDay=as.POSIXct(Sleep$SleepDay, format="%m/%d/%Y %I:%M:%S %p", tz=Sys.timezone())
+Sleep$date <- format(Sleep$SleepDay, format = "%m/%d/%y")
+Sleep$date=as.Date(Sleep$date, "% m/% d/% y")
+```
+
+## Summarizing the dataset (Analyze Phase)
+Now that all the data is stored appropriately and has been prepared for analysis, I can start putting it to
+work.
+Let’s look at the total number of participants in each data sets:
+
+```{r}
+Activity %>%
+summarise(Activity_participants = n_distinct(Activity$Id))
+n_distinct(Calories$Id)
+n_distinct(Intensities$Id)
+n_distinct(Heartrate$Id)
+n_distinct(Sleep$Id)
+n_distinct(Weight$Id)
+```
+
+# Participants Overview
+
+In the dataset, there are distinct participant counts across various categories:
+
+- **Activity, Calories, and Intensities Data:** These datasets include a total of 33 participants.
+
+- **Sleep Data:** The sleep dataset contains information from 24 participants.
+
+- **Heart Rate Data:** For the heart rate dataset, there are records from 14 participants.
+
+- **Weight Data:** The weight dataset comprises data from just 8 participants.
+
+Given that the groups with 8 and 14 participants are relatively small, drawing meaningful recommendations and conclusions from these datasets may be challenging. Therefore, my primary focus for analysis will be on the following datasets: Activity, Calories, Intensities, and Sleep.
+
+Below, you'll find brief summary statistics for each of these data frames.
+
+```{r}
+# Activity
+Activity %>%
+select(TotalSteps,
+TotalDistance,
+SedentaryMinutes, Calories) %>%
+summary()
+```
+
+Exploring the number of Intense active participants :
+
+```{r}
+# Explore number of active minutes per category
+Intensities %>%
+select(VeryActiveMinutes, FairlyActiveMinutes, LightlyActiveMinutes, SedentaryMinutes) %>%
+summary()
+```
+For the Calories dataframe:
+
+```{r}
+# Calories
+Calories %>%
+select(Calories) %>%
+summary()
+```
+For the Sleep dataframe:
+
+```{r}
+# Sleep
+Sleep %>%
+select(TotalSleepRecords, TotalMinutesAsleep, TotalTimeInBed) %>%
+summary()
+```
+For the Weight dataframe:
+
+```{r}
+# Weight
+Weight %>%
+select(WeightKg, Fat) %>%
+summary()
+```
+
+# Key Insights
+
+## Summary of Key Findings
+
+Here are the key insights derived from the analysis:
+
+- **High Sedentary Time:** The average sedentary time exceeds 16 hours, signaling the urgent need for a robust marketing strategy to reduce this high sedentary behavior.
+
+- **Light Activity:** The majority of participants exhibit light activity levels, often accompanied by a significant amount of sedentary time.
+
+- **Sleep Patterns:** On average, participants sleep once a day for approximately 7 hours.
+
+- **Step Count:** The average daily step count stands at 7,638, slightly below the CDC-recommended threshold. According to CDC research, taking 8,000 steps daily is associated with a 51% lower risk of all-cause mortality, while taking 12,000 steps daily is associated with a 65% lower risk compared to taking 4,000 steps.
+
+## Data Merging
+
+Before proceeding with data visualization, I will merge two datasets, namely Activity and Sleep data, based on the "Id" column. It's important to note that there are more participant IDs in the Activity dataset than in the Sleep dataset. To ensure consistency, I will use the "inner_join" merge option, retaining the number of participants from the Sleep dataset.
+
+```{r}
+Combined_data_inner <- merge(Sleep, Activity, by="Id")
+n_distinct(Combined_data_inner$Id)
+```
+
+For the analysis, I'm thinking about using an "outer join" to make sure we keep all participants in the dataset. I can do this by adding the extra argument "all=TRUE" in my code.
+
+```{r}
+Combined_data_outer <- merge(Sleep, Activity, by="Id", all = TRUE)
+n_distinct(Combined_data_outer$Id)
+```
+# Data Visualization (Share and Act Phases)
+
+Now, let's move on to creating visual representations to explore some important aspects.
+
+## Relationship Between Daily Steps and Sedentary Time
+
+In this section, we aim to understand the connection between the number of steps taken in a day and the amount of time spent in sedentary activities.
+
+```{r}
+ggplot(data=Activity, aes(x=TotalSteps, y=SedentaryMinutes)) + geom_point(alpha = 0.6) + geom_smooth() + labs(title="Total Steps vs. Sedentary Minutes")
+```
+I observe a clear inverse relationship between the number of steps taken and the amount of sedentary time. When individuals spend more time in sedentary activities, they tend to take fewer steps throughout the day. This data suggests that there is an opportunity for the company to focus its marketing efforts on customer segments with high sedentary behavior. To achieve this, the company should explore strategies to encourage customers to engage in more walking and also monitor their daily step counts.
+
+## Exploring the Connection Between Sleep Duration and Time Spent in Bed
+We're interested in understanding how the duration of sleep (measured in minutes asleep) is related to the total time spent in bed.
+
+```{r}
+ggplot(data=Sleep, aes(x=TotalMinutesAsleep, y=TotalTimeInBed)) + geom_point(alpha = 0.6)+ geom_smooth() + labs(title=" Minutes Asleep vs. Time in Bed Minutes")
+```
+
+As anticipated, we notice a nearly straight-line trend when examining the relationship between minutes asleep and time in bed. To assist users in enhancing their sleep quality, the company should contemplate implementing notifications to encourage a regular sleep schedule.
+
+Analyzing the Link Between Daily Steps and Caloric Expenditure
+We want to investigate the association between the number of steps taken and the calories burned (caloric expenditure).
+
+```{r}
+ggplot(data=Activity, aes(x=TotalSteps, y=Calories)) + geom_point(alpha = 0.6) + geom_smooth() + labs(title="Total Steps vs. Calories")
+```
+We observe a clear positive relationship between the total number of steps taken and the calories burned. When we are more physically active, our calorie expenditure increases.
+
+## Intensities Data
+
+Now, let's shift our focus to examine some data related to activity intensities over a period of time.
+
+```{r}
+Intensities$ActiveIntensity <- (Intensities$VeryActiveMinutes)/60
+
+Combined_data <- merge(Weight, Intensities, by="Id", all=TRUE)
+Combined_data$time <- format(Combined_data$Date, format = "%H:%M:%S")
+
+ggplot(data=Combined_data, aes(x=time, y=ActiveIntensity)) + geom_histogram(stat = "identity", fill='black') +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(title="Total Very Active Intensity vs. Time ")
+```
+
+# Analyzing Intensity Data Over Time
+
+By examining trends in intensity data over time, the company can gain valuable insights into how customers use their products throughout the day. It's evident that many users are active before and after their work hours, presenting an opportunity for the Bellabeat app to send reminders and motivate users to engage in activities like running or walking during these times.
+
+# Conclusions and Recommendations for the Business
+
+## Empowering Customers with Data
+
+Collecting data on activity, sleep, stress, and more empowers Bellabeat to provide customers with valuable insights into their health and daily routines. Bellabeat is experiencing rapid growth and has positioned itself as a technology-driven wellness company.
+
+## Target Audience
+
+Bellabeat should focus its efforts on individuals with full-time jobs who spend a significant amount of time at their desks or in offices and are in need of fitness and daily activity to maintain their health. Users engage in light physical activity to stay healthy, but there is room for improvement in their daily activity levels. Providing knowledge on developing healthy habits and offering motivation can be beneficial.
+
+## Message to the Company
+
+The Bellabeat app should aim to be a unique fitness and activity companion, akin to a friendly guide. It should assist users in balancing their personal and professional lives while promoting healthy habits.
+
+# Recommendations for the Bellabeat Marketing Team
+
+Here are some recommendations based on the analysis:
+
+1. **Addressing High Sedentary Time:**
+   - The data indicates that users of the app have an average sedentary time exceeding 16 hours, which is a concern. Bellabeat should implement a strong marketing strategy targeting segments with high sedentary behavior. Encouraging users to increase daily steps through step tracking and notifications can be an effective approach.
+
+2. **Promoting Better Sleep Habits:**
+   - On average, users sleep for 7 hours a day. To help users improve their sleep quality, Bellabeat should consider sending app notifications to encourage bedtime routines. Additionally, the app can recommend reducing sedentary time to enhance sleep patterns.
+
+3. **Encouraging Higher Daily Step Counts:**
+   - The average daily step count of 7,638 falls slightly below the CDC's recommended threshold. Bellabeat can educate users about the health benefits of achieving at least 8,000 steps per day, as suggested by CDC research. This can be a compelling way to motivate users to increase their physical activity.
+
+4. **Utilizing Intensity Data:**
+   - Analyzing intensity data over time can provide valuable insights into user engagement patterns throughout the day. Notably, many users are active before and after work hours. Leveraging this information, the Bellabeat app can send timely reminders and motivation to encourage users to engage in physical activities like running or walking during these periods.
+
+5. **Supporting Weight Management:**
+   - For customers aiming to lose weight, Bellabeat can offer features to track daily calorie consumption. Additionally, the app can provide suggestions for low-calorie, healthy meal options for lunch and dinner to aid in weight management.
+
+Thank you for your interest in my Bellabeat Case Study! Your comments and recommendations for further improvement are highly appreciated. Please take care, and goodbye!
+
